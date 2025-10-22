@@ -901,10 +901,9 @@ class TreeItem(QtWidgets.QTreeWidgetItem):
         return super().setText(column, text)
 
     def __lt__(self, other):
-        tree_widget = self.treeWidget()
-        if not self.sortable or not tree_widget:
+        if not self.sortable:
             return False
-        column = tree_widget.sortColumn()
+        column = self.treeWidget().sortColumn()
         return self.sortkey(column) < other.sortkey(column)
 
     def sortkey(self, column):
@@ -991,13 +990,11 @@ class AlbumItem(TreeItem):
                 # insertChildren behaves differently if sorting is disabled / enabled, which results
                 # in different sort order of tracks in unsorted state. As we sort the tracks later
                 # anyway make sure sorting is disabled here.
-                tree_widget = self.treeWidget()
-                if tree_widget:
-                    sorting_enabled = tree_widget.isSortingEnabled()
-                    tree_widget.setSortingEnabled(False)
+                tree_view = self.treeWidget()
+                sorting_enabled = tree_view.isSortingEnabled()
+                tree_view.setSortingEnabled(False)
                 self.insertChildren(oldnum, items)
-                if tree_widget:
-                    tree_widget.setSortingEnabled(sorting_enabled)
+                tree_view.setSortingEnabled(sorting_enabled)
                 for item in items:  # Update after insertChildren so that setExpanded works
                     item.update(update_album=False)
         if album.errors:
@@ -1035,10 +1032,7 @@ class AlbumItem(TreeItem):
 class NatAlbumItem(AlbumItem):
     def __lt__(self, other):
         # Always show NAT entry on top
-        tree_widget = self.treeWidget()
-        if not tree_widget:
-            return True
-        order = tree_widget.header().sortIndicatorOrder()
+        order = self.treeWidget().header().sortIndicatorOrder()
         return order == QtCore.Qt.AscendingOrder
 
 
